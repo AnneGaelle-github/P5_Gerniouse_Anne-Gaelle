@@ -143,20 +143,21 @@ function getTotals(){
     // Modification d'une quantité de produit
 
 function modifyQtt() {
-    let qttModif = document.querySelectorAll(".itemQuantity");
+    let cart__item = document.querySelectorAll(".cart__item"); 
 
-    for (let k = 0; k < qttModif.length; k++){ // Boucle for qui change la quantité du panier 
-        qttModif[k].addEventListener("change" , (event) => {
+    for (let k = 0; k < cart__item.length; k++){ // Boucle for qui change la quantité du panier
+        const inputChange = cart__item[k].querySelector(".itemQuantity");
+        inputChange.addEventListener("change" , (event) => {
             event.preventDefault();
 
             // Selection de l'element à modifier en fonction de son id ET sa couleur
             let quantityModif = produitLocalStorage[k].quantiteProduit;
-            let qttModifValue = qttModif[k].valueAsNumber;
+            let qttModifValue = inputChange.valueAsNumber;
             
-            const resultFind = produitLocalStorage.find((el) => el.qttModifValue !== quantityModif);
+            const resultFind = produitLocalStorage.find((el) => el.idProduit === cart__item[k].getAttribute('data-id'))
 
             // Modification de la quantité
-            resultFind.quantiteProduit = qttModifValue; 
+            resultFind.quantiteProduit = qttModifValue;
             produitLocalStorage[k].quantiteProduit = resultFind.quantiteProduit;
 
             localStorage.setItem("produit", JSON.stringify(produitLocalStorage));
@@ -194,3 +195,193 @@ function deleteProduct() {
 }
 deleteProduct();
 
+
+
+
+//Instauration du formulaire avec les Regex
+
+function getForm() {
+
+    // Ajout des Regex
+
+    let form = document.querySelector(".cart__order__form");
+
+    //Création des expressions régulières
+
+    let emailRegExp = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$'); // Regex pour l'adresse email 
+    let charRegExp = new RegExp("^[a-zA-Z ,.'-]+$"); // Regex pour nom, prénom
+    let addressRegExp = new RegExp("^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+"); // Regex pour l'adresse
+
+
+    // Ecouter la modification du prénom
+
+    form.firstName.addEventListener('change', function() { // Ecouter si il y a un changement 
+        validFirstName(this);
+    });
+
+    // Validation du prénom
+
+    const validFirstName = function(inputFirstName) {
+        let firstNameErrorMsg = inputFirstName.nextElementSibling; // Attrape la balise HTML suivante (p)
+
+        if (charRegExp.test(inputFirstName.value)) { // Si le prénom est valide
+            firstNameErrorMsg.innerHTML = 'Prénom valide';
+        } else { // Si le prénom n'est pas valide
+            firstNameErrorMsg.innerHTML = 'Veuillez renseigner ce champ.';
+        }
+    };
+
+
+    // Ecoute de la modification du nom
+
+    form.lastName.addEventListener('change', function() { // Ecouter si il y a un changement
+        validLastName(this);
+    });
+
+    // Validation du nom
+
+    const validLastName = function(inputLastName) {
+        let lastNameErrorMsg = inputLastName.nextElementSibling; // Attrape la balise HTML suivante (p)
+
+        if (charRegExp.test(inputLastName.value)) { // Si le nom est valide
+            lastNameErrorMsg.innerHTML = 'Nom valide';
+        } else { // Si le nom n'est pas valide
+            lastNameErrorMsg.innerHTML = 'Veuillez renseigner ce champ.';
+        }
+    };
+
+
+    // Ecoute de la modification l'adresse
+
+    form.address.addEventListener('change', function() { // Ecouter si il y a un changement
+        validAddress(this);
+    });
+
+    // Validation de l'adresse
+
+    const validAddress = function(inputAddress) {
+        let addressErrorMsg = inputAddress.nextElementSibling; // Attrape la balise HTML suivante (p)
+
+        if (addressRegExp.test(inputAddress.value)) { // Si l'adresse est valide
+            addressErrorMsg.innerHTML = 'Adresse valide';
+        } else { // Si l'adresse n'est pas valide
+            addressErrorMsg.innerHTML = 'Adresse non valide.';
+        }
+    };
+
+
+    // Ecoute de la modification du ville
+
+    form.city.addEventListener('change', function() { // Ecouter si il y a un changement
+        validCity(this);
+    });
+
+    // Validation de la ville
+
+    const validCity = function(inputCity) {
+        let cityErrorMsg = inputCity.nextElementSibling; // Attrape la balise HTML suivante (p)
+
+        if (charRegExp.test(inputCity.value)) { // Si le nom de ville est valide
+            cityErrorMsg.innerHTML = 'Ville valide';
+        } else { // Si le nom de ville n'est pas valide
+            cityErrorMsg.innerHTML = 'Veuillez renseigner ce champ.';
+        }
+    };
+
+
+    // Ecoute de la modification du email
+
+    form.email.addEventListener('change', function() { // Ecouter si il y a un changement
+        validEmail(this);
+    });
+
+    // Validation de l'email
+
+    const validEmail = function(inputEmail) {
+        let emailErrorMsg = inputEmail.nextElementSibling; // Attrape la balise HTML suivante (p)
+
+        if (emailRegExp.test(inputEmail.value)) { // Si l'adresse email est valide
+            emailErrorMsg.innerHTML = 'Adresse email valide';
+        } else { // Si l'adresse n'est pas valide
+            emailErrorMsg.innerHTML = 'Adresse email non valide.';
+        }
+    };
+
+
+    // Soumission du formulaire
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (validEmail(form.email)) { // Si les informations sont valides le formulaire peut être envoyé
+            form.submit();
+        } else { // Sinon le formulaire ne pourra pas être envoyé et affichera : "Formulaire incorrect"
+            console.log('Formulaire incorrect')
+        }
+    })
+
+}
+getForm();
+
+
+
+// Post du formulaire
+// Envoi des informations client au localstorage
+
+function postForm(){
+    const btn_commander = document.getElementById("order");
+
+    // Ecouter le panier
+
+    btn_commander.addEventListener("click", (event)=>{
+    
+        // Récupération des coordonnées du formulaire client
+
+        let inputName = document.getElementById('firstName');
+        let inputLastName = document.getElementById('lastName');
+        let inputAdress = document.getElementById('address');
+        let inputCity = document.getElementById('city');
+        let inputMail = document.getElementById('email');
+
+        // Construction d'un array depuis le local storage
+
+        let idProducts = [];
+        for (let c = 0; c < produitLocalStorage.length; c ++) { // Boucle for qui rajoute les produits
+            idProducts.push(produitLocalStorage[c].idProduit); // Envoi les produits dans le tableau
+        }
+        console.log(idProducts);
+
+        const order = {
+            contact : {
+                firstName: inputName.value,
+                lastName: inputLastName.value,
+                address: inputAdress.value,
+                city: inputCity.value,
+                email: inputMail.value,
+             },
+            products: idProducts,
+        } 
+
+        const options = {
+            method: 'POST',
+            body: JSON.stringify(order),
+            headers: {
+                'Accept': 'application/json', 
+                "Content-Type": "application/json" 
+            },
+        };
+
+        fetch("http://localhost:3000/api/products/order", options)
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
+            localStorage.clear(); // Vide le contenu du panier une fois la commande validé
+            localStorage.setItem("orderId", data.orderId);
+
+            document.location.href = "confirmation.html";
+        })
+        .catch((err) => {
+            alert ("Problème avec fetch : " + err.message);
+        });
+        })
+}
+postForm();
