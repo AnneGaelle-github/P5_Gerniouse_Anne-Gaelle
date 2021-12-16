@@ -226,8 +226,10 @@ function getForm() {
 
         if (charRegExp.test(inputFirstName.value)) { // Si le prénom est valide
             firstNameErrorMsg.innerHTML = 'Prénom valide';
+            return true;
         } else { // Si le prénom n'est pas valide
             firstNameErrorMsg.innerHTML = 'Veuillez renseigner ce champ.';
+            return false;
         }
     };
 
@@ -245,8 +247,10 @@ function getForm() {
 
         if (charRegExp.test(inputLastName.value)) { // Si le nom est valide
             lastNameErrorMsg.innerHTML = 'Nom valide';
+            return true;
         } else { // Si le nom n'est pas valide
             lastNameErrorMsg.innerHTML = 'Veuillez renseigner ce champ.';
+            return false;
         }
     };
 
@@ -264,8 +268,10 @@ function getForm() {
 
         if (addressRegExp.test(inputAddress.value)) { // Si l'adresse est valide
             addressErrorMsg.innerHTML = 'Adresse valide';
+            return true;
         } else { // Si l'adresse n'est pas valide
             addressErrorMsg.innerHTML = 'Adresse non valide.';
+            return false;
         }
     };
 
@@ -283,8 +289,10 @@ function getForm() {
 
         if (charRegExp.test(inputCity.value)) { // Si le nom de ville est valide
             cityErrorMsg.innerHTML = 'Ville valide';
+            return true;
         } else { // Si le nom de ville n'est pas valide
             cityErrorMsg.innerHTML = 'Veuillez renseigner ce champ.';
+            return false;
         }
     };
 
@@ -302,8 +310,10 @@ function getForm() {
 
         if (emailRegExp.test(inputEmail.value)) { // Si l'adresse email est valide
             emailErrorMsg.innerHTML = 'Adresse email valide';
+            return true;
         } else { // Si l'adresse n'est pas valide
             emailErrorMsg.innerHTML = 'Adresse email non valide.';
+            return false;
         }
     };
 
@@ -312,13 +322,13 @@ function getForm() {
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
-        if (validEmail(form.email)) { // Si les informations sont valides le formulaire peut être envoyé
-            form.submit();
+        if (validEmail(form.email) && form.city && form.address && form.lastName && form.firstName) { // Si les informations sont valides le formulaire peut être envoyé
+            console.log('Formulaire correct')
+            postForm();
         } else { // Sinon le formulaire ne pourra pas être envoyé et affichera : "Formulaire incorrect"
             console.log('Formulaire incorrect')
         }
     })
-
 }
 getForm();
 
@@ -327,61 +337,54 @@ getForm();
 // Post du formulaire
 // Envoi des informations client au localstorage
 
-function postForm(){
-    const btn_commander = document.getElementById("order");
-
-    // Ecouter le panier
-
-    btn_commander.addEventListener("click", (event)=>{
+function postForm() {
     
-        // Récupération des coordonnées du formulaire client
+    // Récupération des coordonnées du formulaire client
 
-        let inputName = document.getElementById('firstName');
-        let inputLastName = document.getElementById('lastName');
-        let inputAdress = document.getElementById('address');
-        let inputCity = document.getElementById('city');
-        let inputMail = document.getElementById('email');
+    let inputName = document.getElementById('firstName');
+    let inputLastName = document.getElementById('lastName');
+    let inputAdress = document.getElementById('address');
+    let inputCity = document.getElementById('city');
+    let inputMail = document.getElementById('email');
 
-        // Construction d'un array depuis le local storage
+    // Construction d'un array depuis le local storage
 
-        let idProducts = [];
-        for (let c = 0; c < produitLocalStorage.length; c ++) { // Boucle for qui rajoute les produits
-            idProducts.push(produitLocalStorage[c].idProduit); // Envoi les produits dans le tableau
-        }
-        console.log(idProducts);
+    let idProducts = [];
+    for (let c = 0; c < produitLocalStorage.length; c ++) { // Boucle for qui rajoute les produits
+        idProducts.push(produitLocalStorage[c].idProduit); // Envoi les produits dans le tableau
+    }
+    console.log(idProducts);
 
-        const order = {
-            contact : {
-                firstName: inputName.value,
-                lastName: inputLastName.value,
-                address: inputAdress.value,
-                city: inputCity.value,
-                email: inputMail.value,
-             },
-            products: idProducts,
-        } 
-
-        const options = {
-            method: 'POST',
-            body: JSON.stringify(order),
-            headers: {
-                'Accept': 'application/json', 
-                "Content-Type": "application/json" 
+    const order = { // Objet contact du formulaire
+        contact : {
+            firstName: inputName.value,
+            lastName: inputLastName.value,
+            address: inputAdress.value,
+            city: inputCity.value,
+            email: inputMail.value,
             },
-        };
+        products: idProducts,
+    } 
 
-        fetch("http://localhost:3000/api/products/order", options)
-        .then((response) => response.json())
-        .then((data) => {
-            console.log(data);
-            localStorage.clear(); // Vide le contenu du panier une fois la commande validé
-            localStorage.setItem("orderId", data.orderId);
+    const options = {
+        method: 'POST',
+        body: JSON.stringify(order),
+        headers: {
+            'Accept': 'application/json', 
+            "Content-Type": "application/json" 
+        },
+    };
 
-            document.location.href = "confirmation.html";
-        })
-        .catch((err) => {
-            alert ("Problème avec fetch : " + err.message);
-        });
-        })
+    fetch("http://localhost:3000/api/products/order", options)
+    .then((response) => response.json())
+    .then((data) => {
+        console.log(data);
+        localStorage.clear(); // Vide le contenu du panier une fois la commande validé
+        localStorage.setItem("orderId", data.orderId);
+
+        document.location.href = "confirmation.html";
+    })
+    .catch((err) => {
+        alert ("Problème avec fetch : " + err.message);
+    });
 }
-postForm();
