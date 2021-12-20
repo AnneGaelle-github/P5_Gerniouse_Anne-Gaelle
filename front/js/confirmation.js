@@ -2,9 +2,10 @@
 
 function purchase_order() {
     const idNode = document.getElementById("orderId");
-    idNode.innerText = localStorage.getItem("orderId");
-    console.log(localStorage.getItem("orderId"))
-    //localStorage.clear(); // Le panier ce vide
+    if (idNode) { // Si idNode existe le code peut s'executer 
+        idNode.innerText = localStorage.getItem("orderId");
+        localStorage.clear(); // Le panier ce vide
+    }
 }
 
 purchase_order();
